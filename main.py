@@ -1,37 +1,53 @@
 # main.py
 # Gavin Haynes, Ibrahim Monsour
+# CS360 Database Systems
+# Fall '24
 # An algorithm to clean noise from the CroplandCROS dataset
 
 import os
+import sys
 import cv2 as cv
 
-inputPath = "sample-input.jpg"
 ROWS = 0
 COLS = 0
 
-# Engine
-def main():
-    input = cv.imread(inputPath)
-    
-    # Store input dimensions
-    ROWS = input.shape[0]
-    COLS = input.shape[1]
-    print("Loaded image with " + repr(ROWS) + " rows and "
-        + repr(COLS) + " columns.")
-
-    # cv.imshow("Input", input)
-    
-    # cv.waitKey(0) # pause the imshow frame
-    inputs = projectInput(input)
-
-
 # Project the input image in to images with only one color
-def projectInput(img) -> list:
-    for pixel in img:
-        pass
-
-def filterNoise1(img):
+# Input: image, Output: list of images
+# Also take note of the "depth" of the image;
+def project(img) -> list:
+    # find the first pixel and it's color
+    # strip all pixels of that color from the image
+    # find a new color
+    # repeat
+    # return a list of images with all pixels of one color each
     pass
 
+# Apply the first noise filter, removing specks from each image
+def filter(img):
+    pass
+
+# Find enclosed regions and fill them in
+def fill(img):
+    pass
+
+# Take a list of images and squash in to one image
+def squash(images):
+    pass
+
+# Main engine
+def main():
+    # Load image and check args
+    assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
+    input = cv.imread(sys.argv[1])
+    assert input is not None, "Image " + sys.argv[1] + " failed to load."
+    print("Image " + sys.argv[1] + " loaded successfully.")
+    # Ideal main logic:
+    # projections = project(input)
+    # for img in projections:
+    #     img = filter(img)
+    #     img = fill(img)
+    # output = squash(projections)
+
+# Reduce ambiguity
 if __name__ == '__main__':
     main()
