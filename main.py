@@ -41,6 +41,13 @@ def main():
     input = cv.imread(sys.argv[1])
     assert input is not None, "Image " + sys.argv[1] + " failed to load."
     print("Image " + sys.argv[1] + " loaded successfully.")
+
+    # example
+    ROWS = input.shape[0]
+    COLS = input.shape[1]
+
+    print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
+
     # Ideal main logic:
     # projections = project(input)
     # for img in projections:
