@@ -7,20 +7,29 @@
 import os
 import sys
 import cv2 as cv
+import numpy as np
 
 ROWS = 0
 COLS = 0
 
-# Project the input image in to images with only one color
-# Input: image, Output: list of images
-# Also take note of the "depth" of the image;
 def project(img) -> list:
-    # find the first pixel and it's color
-    # strip all pixels of that color from the image
-    # find a new color
-    # repeat
-    # return a list of images with all pixels of one color each
-    pass
+    if img is None:
+        print("Image could not be loaded. Check the file path.")
+    unique_colors = np.unique(img.reshape(-1, img.shape[2]), axis=0)
+    print("Unique Colors identified")
+
+    individual_color_maps = []
+
+    for color in unique_colors:
+        mask = np.all(img == color, axis=-1)
+        
+        color_image = np.zeros_like(img)
+        color_image[mask] = color
+        
+        individual_color_maps.append(color_image)
+
+    print("Image splitting complete")
+    return individual_color_maps
 
 # Apply the first noise filter, removing specks from each image
 def filter(img):
@@ -48,6 +57,13 @@ def main():
 
     print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
 
+    quantized_image = kmeans_color_quantization(input, k=20) #reduce total colors
+
+    projections = project(quantized_image)
+    cv.imshow('Image', projections[1])
+    cv.waitKey(0)
+
+    #print(projections)
     # Ideal main logic:
     # projections = project(input)
     # for img in projections:
@@ -56,5 +72,20 @@ def main():
     # output = squash(projections)
 
 # Reduce ambiguity
+    
+def kmeans_color_quantization(img, k):
+    img_reshaped = img.reshape((-1, 3)).astype(np.float32)
+
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv.kmeans(img_reshaped, k, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS)
+
+    centers = np.uint8(centers)
+    
+    quantized_img = centers[labels.flatten()]
+    quantized_img = quantized_img.reshape(img.shape)
+    
+    return quantized_img
+
+
 if __name__ == '__main__':
     main()
