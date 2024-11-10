@@ -7,20 +7,29 @@
 import os
 import sys
 import cv2 as cv
+import numpy as np
 
 ROWS = 0
 COLS = 0
 
-# Project the input image in to images with only one color
-# Input: image, Output: list of images
-# Also take note of the "depth" of the image;
 def project(img) -> list:
-    # find the first pixel and it's color
-    # strip all pixels of that color from the image
-    # find a new color
-    # repeat
-    # return a list of images with all pixels of one color each
-    pass
+    if img is None:
+        print("Image could not be loaded. Check the file path.")
+    unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
+    print("Unique Colors identified")
+
+    individual_color_maps = []
+
+    for color in unique_colors:
+        mask = np.all(img == color, axis=-1) #find all pixels in the image where the color matches
+        
+        color_image = np.zeros_like(img) #create a blacked out image
+        color_image[mask] = color
+        
+        individual_color_maps.append(color_image)
+
+    print("Image splitting complete")
+    return individual_color_maps
 
 # Apply the first noise filter, removing specks from each image
 def filter(img):
@@ -48,6 +57,17 @@ def main():
 
     print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
 
+    corrected_image = kmeans_color_correction(input, k=30) #reduce total colors
+
+    projections = project(corrected_image)
+
+    test = gray_scale(projections[1])
+
+    #cv.imshow('Image', projections[1])
+    cv.imshow('Image', test)
+    cv.waitKey(0)
+
+    #print(projections)
     # Ideal main logic:
     # projections = project(input)
     # for img in projections:
@@ -56,5 +76,28 @@ def main():
     # output = squash(projections)
 
 # Reduce ambiguity
+    
+def kmeans_color_correction(img, k):
+    img_reshaped = img.reshape((-1, 3)).astype(np.float32)
+
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+    _, labels, centers = cv.kmeans(img_reshaped, k, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS)
+
+    centers = np.uint8(centers)
+    
+    corrected_img = centers[labels.flatten()]
+    corrected_img = corrected_img.reshape(img.shape)
+    
+    return corrected_img
+
+def gray_scale(img):
+    mask = np.any(img != [0,0,0], axis=-1)
+        
+    color_image = np.zeros_like(img) #create a blacked out image
+    color_image[mask] = [255,255,255]
+
+    return color_image
+
+
 if __name__ == '__main__':
     main()
