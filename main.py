@@ -15,15 +15,15 @@ COLS = 0
 def project(img) -> list:
     if img is None:
         print("Image could not be loaded. Check the file path.")
-    unique_colors = np.unique(img.reshape(-1, img.shape[2]), axis=0)
+    unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
     print("Unique Colors identified")
 
     individual_color_maps = []
 
     for color in unique_colors:
-        mask = np.all(img == color, axis=-1)
+        mask = np.all(img == color, axis=-1) #find all pixels in the image where the color matches
         
-        color_image = np.zeros_like(img)
+        color_image = np.zeros_like(img) #create a blacked out image
         color_image[mask] = color
         
         individual_color_maps.append(color_image)
@@ -57,10 +57,14 @@ def main():
 
     print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
 
-    quantized_image = kmeans_color_quantization(input, k=20) #reduce total colors
+    corrected_image = kmeans_color_correction(input, k=30) #reduce total colors
 
-    projections = project(quantized_image)
-    cv.imshow('Image', projections[1])
+    projections = project(corrected_image)
+
+    test = gray_scale(projections[1])
+
+    #cv.imshow('Image', projections[1])
+    cv.imshow('Image', test)
     cv.waitKey(0)
 
     #print(projections)
@@ -73,7 +77,7 @@ def main():
 
 # Reduce ambiguity
     
-def kmeans_color_quantization(img, k):
+def kmeans_color_correction(img, k):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32)
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2)
@@ -81,10 +85,18 @@ def kmeans_color_quantization(img, k):
 
     centers = np.uint8(centers)
     
-    quantized_img = centers[labels.flatten()]
-    quantized_img = quantized_img.reshape(img.shape)
+    corrected_img = centers[labels.flatten()]
+    corrected_img = corrected_img.reshape(img.shape)
     
-    return quantized_img
+    return corrected_img
+
+def gray_scale(img):
+    mask = np.any(img != [0,0,0], axis=-1)
+        
+    color_image = np.zeros_like(img) #create a blacked out image
+    color_image[mask] = [255,255,255]
+
+    return color_image
 
 
 if __name__ == '__main__':
