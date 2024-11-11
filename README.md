@@ -9,6 +9,12 @@ Fall 2024
 A pipeline to reduce noise from samples of the CroplandCROS dataset which utilizes K Mean Clustering, Normalization, 
 Morphological Open and Close operations to extract dominant colors, split, reduce background splatters, and then fill holes.
 
+## Running
+Once this repository has been cloned, test this pipeline on one of several test inputs, which are seperated in to small, medium, and large formats. Example: 
+```
+python main.py input/lg/3.jpg
+```
+
 ## Pipeline Structure
 
 ![Large example input](./examples/input-lg-3.jpg)
