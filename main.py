@@ -9,8 +9,33 @@ import sys
 import cv2 as cv
 import numpy as np
 
-ROWS = 0
-COLS = 0
+# Main engine
+def main():
+    # Load image and check args
+    assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
+    input = cv.imread(sys.argv[1])
+    assert input is not None, "Image " + sys.argv[1] + " failed to load."
+    print("Image " + sys.argv[1] + " loaded successfully.")
+
+    # find k most dominant colors in the input
+    input = kmeans_color_correction(input, k=9)
+
+    # split the input by each dominant color
+    projections = project(input)    # list of images
+
+    # save copies of all projections
+    for i in range(0, len(projections)):
+        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+
+    # apply morphological transformations to further reduce noise
+    morphs = [] 
+    for i in range(0, len(projections)):
+        morphed = morph(projections[i], 3)
+        morphs.append(morphed)
+    
+    # save a copy of all the morphed images
+    for i in range(0, len(morphs)):
+        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
 def project(img) -> list:
     if img is None:
@@ -33,66 +58,39 @@ def project(img) -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection: cv.typing.MatLike) -> cv.typing.MatLike:
-    # make a 3x3 rectangular kernel for uniform changes
-    # (just a 3 by 3 matrix full of ones)
+def morph(projection, option):
+    # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
+    
+    output = projection # make a copy of projection
 
-    # apply open morph to remove small noise splatters
-    output = cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
-
-    # apply close morph to fill in remaining holes
-    output = cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)
-
-    # apply open morph to remove small noise splatters
-    output = cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
+    match option:   # morphing order options
+        case 0: # just open
+            output = morphOpen(projection, kernel)
+        case 1: # just close
+            output = morphClose(projection, kernel)
+        case 2: # open then close
+            output = morphOpen(projection, kernel)
+            output = morphClose(projection, kernel)
+        case 3: # close then open
+            output = morphClose(projection, kernel)
+            output = morphOpen(projection, kernel)
+        case default:
+            pass
 
     return output
+
+# Apply morphological opening operation to reduce background noise splatter
+def morphOpen(projection, kernel):
+    return cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
+
+# Apply morphological close operation to fill in holes 
+def morphClose(projection, kernel):
+    return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)
 
 # Take a list of images and squash in to one image
 def squash(images):
     pass
-
-# Main engine
-def main():
-    # Load image and check args
-    assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
-    input = cv.imread(sys.argv[1])
-    assert input is not None, "Image " + sys.argv[1] + " failed to load."
-    print("Image " + sys.argv[1] + " loaded successfully.")
-
-    # example
-    ROWS = input.shape[0]
-    COLS = input.shape[1]
-
-    print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
-
-    # find k most dominant colors in the input
-    input = kmeans_color_correction(input, k=9)
-
-    # split the input by each dominant color
-    projections = project(input)
-
-    # apply morphological transformations to further reduce noise
-    morphs = [] 
-    for i in range(0, len(projections)-1):
-        morphed = morph(projections[i])
-        cv.imwrite(f"morphed-{i}.jpg", morphed)
-        morphs.append(morphed)
-
-    # test = gray_scale(projections[1])
-
-    #cv.imshow('Image', projections[1])
-    # cv.imshow('Image', test)
-    # cv.waitKey(0)
-
-    # Ideal main logic:
-    # projections = project(input)
-    # for img in projections:
-    #     img = filter(img)
-    #     img = fill(img)
-    # output = squash(projections)
-
 
 # Reduce ambiguity
 def kmeans_color_correction(img, k):
