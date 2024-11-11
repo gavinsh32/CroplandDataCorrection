@@ -49,7 +49,7 @@ def project(img) -> list:
         mask = np.all(img == color, axis=-1) #find all pixels in the image where the color matches
         
         color_image = np.zeros_like(img) #create a blacked out image
-        color_image[mask] = color
+        color_image[mask] = color #put all colors of this unique type in the new blacked out image
         
         individual_color_maps.append(color_image)
 
@@ -94,23 +94,23 @@ def squash(images):
 
 # Reduce ambiguity
 def kmeans_color_correction(img, k):
-    img_reshaped = img.reshape((-1, 3)).astype(np.float32)
+    img_reshaped = img.reshape((-1, 3)).astype(np.float32) #create 2d array
 
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-    _, labels, centers = cv.kmeans(img_reshaped, k, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS)
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2) #criteria to stop running the kmeans if any criteria is met
+    _, labels, centers = cv.kmeans(img_reshaped, k, None, criteria, 10, cv.KMEANS_RANDOM_CENTERS) #run kmeans
 
     centers = np.uint8(centers)
     
-    corrected_img = centers[labels.flatten()]
-    corrected_img = corrected_img.reshape(img.shape)
+    corrected_img = centers[labels.flatten()] #map each pixel to the closest color center
+    corrected_img = corrected_img.reshape(img.shape) #reshape the corrected image back to the same dimensions as the input image
     
     return corrected_img
 
 def gray_scale(img):
-    mask = np.any(img != [0,0,0], axis=-1)
+    mask = np.any(img != [0,0,0], axis=-1) #create a map of all pixels in the img that are not black and use -1 to compare all RGB values
         
     color_image = np.zeros_like(img) #create a blacked out image
-    color_image[mask] = [255,255,255]
+    color_image[mask] = [255,255,255] #turn all non black pixels white
 
     return color_image
 
