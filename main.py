@@ -31,18 +31,23 @@ def project(img) -> list:
     print("Image splitting complete")
     return individual_color_maps
 
-# Apply a morphological opening operation on img to remove small noise splatters
-def OpenMorph(img):
-    pass
+# Apply morphological close and open operations on a projection to both remove noise splatter
+# and then fill in remaining holes.
+def morph(projection: cv.typing.MatLike) -> cv.typing.MatLike:
+    # make a 3x3 rectangular kernel for uniform changes
+    # (just a 3 by 3 matrix full of ones)
+    kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
 
-# Apply a morphological closing operation on img to fill in holes and recorrect
-# from OpenMorph(img)
-def CloseMorph(img):
-    pass
+    # apply open morph to remove small noise splatters
+    output = cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
 
-# Find enclosed regions and fill them in
-def fill(img):
-    pass
+    # apply close morph to fill in remaining holes
+    output = cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)
+
+    # apply open morph to remove small noise splatters
+    output = cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
+
+    return output
 
 # Take a list of images and squash in to one image
 def squash(images):
@@ -62,15 +67,24 @@ def main():
 
     print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
 
-    corrected_image = kmeans_color_correction(input, k=30) #reduce total colors
+    # find k most dominant colors in the input
+    input = kmeans_color_correction(input, k=9)
 
-    projections = project(corrected_image)
+    # split the input by each dominant color
+    projections = project(input)
 
-    test = gray_scale(projections[1])
+    # apply morphological transformations to further reduce noise
+    morphs = [] 
+    for i in range(0, len(projections)-1):
+        morphed = morph(projections[i])
+        cv.imwrite(f"morphed-{i}.jpg", morphed)
+        morphs.append(morphed)
+
+    # test = gray_scale(projections[1])
 
     #cv.imshow('Image', projections[1])
-    cv.imshow('Image', test)
-    cv.waitKey(0)
+    # cv.imshow('Image', test)
+    # cv.waitKey(0)
 
     # Ideal main logic:
     # projections = project(input)
@@ -79,8 +93,8 @@ def main():
     #     img = fill(img)
     # output = squash(projections)
 
+
 # Reduce ambiguity
-    
 def kmeans_color_correction(img, k):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32)
 
