@@ -31,8 +31,13 @@ def project(img) -> list:
     print("Image splitting complete")
     return individual_color_maps
 
-# Apply the first noise filter, removing specks from each image
-def filter(img):
+# Apply a morphological opening operation on img to remove small noise splatters
+def OpenMorph(img):
+    pass
+
+# Apply a morphological closing operation on img to fill in holes and recorrect
+# from OpenMorph(img)
+def CloseMorph(img):
     pass
 
 # Find enclosed regions and fill them in
@@ -67,7 +72,6 @@ def main():
     cv.imshow('Image', test)
     cv.waitKey(0)
 
-    #print(projections)
     # Ideal main logic:
     # projections = project(input)
     # for img in projections:
