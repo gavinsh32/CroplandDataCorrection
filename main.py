@@ -86,7 +86,7 @@ def morphOpen(projection, kernel):
 
 # Apply morphological close operation to fill in holes 
 def morphClose(projection, kernel):
-    return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)
+    return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)  
 
 # Take a list of images and squash in to one image
 def squash(images):
