@@ -37,6 +37,10 @@ def main():
     for i in range(0, len(morphs)):
         cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
+    test = squash_img(morphs)
+    cv.imshow('match', test)
+    cv.waitKey(0)
+
 def project(img) -> list:
     if img is None:
         print("Image could not be loaded. Check the file path.")
@@ -70,11 +74,13 @@ def morph(projection, option):
         case 1: # just close
             output = morphClose(projection, kernel)
         case 2: # open then close
+            output = morphClose(projection, kernel)
+            output = morphOpen(projection, kernel)
             output = morphOpen(projection, kernel)
             output = morphClose(projection, kernel)
         case 3: # close then open
-            output = morphClose(projection, kernel)
             output = morphOpen(projection, kernel)
+            output = morphClose(projection, kernel)
         case default:
             pass
 
@@ -87,10 +93,6 @@ def morphOpen(projection, kernel):
 # Apply morphological close operation to fill in holes 
 def morphClose(projection, kernel):
     return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)  
-
-# Take a list of images and squash in to one image
-def squash(images):
-    pass
 
 # Reduce ambiguity
 def kmeans_color_correction(img, k):
@@ -106,14 +108,18 @@ def kmeans_color_correction(img, k):
     
     return corrected_img
 
-def gray_scale(img):
-    mask = np.any(img != [0,0,0], axis=-1) #create a map of all pixels in the img that are not black and use -1 to compare all RGB values
-        
-    color_image = np.zeros_like(img) #create a blacked out image
-    color_image[mask] = [255,255,255] #turn all non black pixels white
+def squash_img(filtered_imgs):
+    height, width, channels = filtered_imgs[0].shape #find the shape of the image
 
-    return color_image
+    combined_img = np.zeros((height, width, channels), dtype=np.uint8) #create initial blacked out image
 
+    #loop through all pixels and imgs
+    for i in range(height):
+        for j in range(width):
+            for img in filtered_imgs:
+                if np.array_equal(combined_img[i,j], [0,0,0]): #check if pixel is black which means it can be changed
+                    combined_img[i,j] = img[i,j]
+    return combined_img
 
 if __name__ == '__main__':
     main()
