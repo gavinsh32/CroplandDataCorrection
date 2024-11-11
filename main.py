@@ -57,11 +57,11 @@ def main():
 
     print(repr(ROWS) + " rows and " + repr(COLS) + " columns.")
 
-    corrected_image = kmeans_color_correction(input, k=30) #reduce total colors
+    corrected_image = kmeans_color_correction(input, k=8) #reduce total colors
 
     projections = project(corrected_image)
 
-    test = gray_scale(projections[1])
+    test = squash_img([projections[0], projections[1]])
 
     #cv.imshow('Image', projections[1])
     cv.imshow('Image', test)
@@ -98,6 +98,18 @@ def gray_scale(img):
 
     return color_image
 
+def squash_img(filtered_imgs):
+    height, width, channels = filtered_imgs[0].shape #find the shape of the image
+
+    combined_img = np.zeros((height, width, channels), dtype=np.uint8) #create initial blacked out image
+
+    #loop through all pixels and imgs
+    for i in range(height):
+        for j in range(width):
+            for img in filtered_imgs:
+                if np.array_equal(combined_img[i,j], [0,0,0]): #check if pixel is black which means it can be changed
+                    combined_img[i,j] = img[i,j]
+    return combined_img
 
 if __name__ == '__main__':
     main()
