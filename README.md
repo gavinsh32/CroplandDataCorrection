@@ -10,13 +10,25 @@ A pipeline to reduce noise from samples of the CroplandCROS dataset which utiliz
 Morphological Open and Close operations to extract dominant colors, split, reduce background splatters, and then fill holes.
 
 ## Pipeline Structure
+
+![Large example input](./examples/input-lg-3.jpg)
+
+_Example input_
+
 ### 1. K Mean Clustering
 Find the dominant colors in the input sample.
+
 ### 2. Projection & Normalization
+
+![One result from projection](./examples/projection0.jpg)
+
 Take all least dominant colors and normalize with the most dominant ones, and split by color.
-### 3. Morphological Closing
-Close small holes.
-### 4. Morphological Opening
-Reduce "splatter" noise, which is very small and seperate from main clumps.
-### 5. Squashing
+
+### 3. Morphological Operations
+
+![One result from projection](./examples/morph0.jpg)
+
+Close small holes and remove small groups of noise.
+
+### 4. Result
 Take corrected, seperated inputs and combine to form the output.
