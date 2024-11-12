@@ -59,35 +59,33 @@ def project(img) -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection, option):
+def morph(projection: cv.typing.MatLike, option):
     # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
-    
-    output = projection # make a copy of projection
+
+    # Apply morphological opening operation to reduce background noise splatter
+    def morphOpen(projection):
+        return cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
+
+    # Apply morphological close operation to fill in holes 
+    def morphClose(projection):
+        return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel) 
 
     match option:   # morphing order options
-        case 0: # just open
-            output = morphOpen(projection, kernel)
-        case 1: # just close
-            output = morphClose(projection, kernel)
-        case 2: # open then close
-            output = morphOpen(projection, kernel)
-            output = morphClose(projection, kernel)
-        case 3: # close then open
-            output = morphClose(projection, kernel)
-            output = morphOpen(projection, kernel)
+        case 0:                                 # just open
+            output = morphOpen(projection)
+        case 1:                                 # just close
+            output = morphClose(projection)
+        case 2:                                 # open then close
+            output = morphOpen(projection)
+            output = morphClose(projection)
+        case 3:                                 # close then open
+            output = morphClose(projection)
+            output = morphOpen(projection)
         case default:
             pass
 
-    return output
-
-# Apply morphological opening operation to reduce background noise splatter
-def morphOpen(projection, kernel):
-    return cv.morphologyEx(projection, cv.MORPH_OPEN, kernel)
-
-# Apply morphological close operation to fill in holes 
-def morphClose(projection, kernel):
-    return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)  
+    return output 
 
 # Reduce ambiguity
 def kMeans(img, k):
