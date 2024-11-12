@@ -17,25 +17,26 @@ def main():
     assert input is not None, "Image " + sys.argv[1] + " failed to load."
     print("Image " + sys.argv[1] + " loaded successfully.")
 
-    # find k most dominant colors in the input
-    input = kmeans_color_correction(input, k=9)
+    input = kMeans(input, k=9)      # find k most dominant colors in the input
 
-    # split the input by each dominant color
-    projections = project(input)    # list of images
+    projections = project(input)    # split the input by each dominant color
 
     # save copies of all projections
-    for i in range(0, len(projections)):
-        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+    # for i in range(0, len(projections)):
+    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
 
     # apply morphological transformations to further reduce noise
     morphs = [] 
     for i in range(0, len(projections)):
-        morphed = morph(projections[i], 3)
+        morphed = morph(projections[i], 2)
         morphs.append(morphed)
     
     # save a copy of all the morphed images
-    for i in range(0, len(morphs)):
-        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+    # for i in range(0, len(morphs)):
+    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+
+    # Save results
+    cv.imwrite(f'output.jpg', squash(morphs))
 
 def project(img) -> list:
     if img is None:
@@ -88,12 +89,8 @@ def morphOpen(projection, kernel):
 def morphClose(projection, kernel):
     return cv.morphologyEx(projection, cv.MORPH_CLOSE, kernel)  
 
-# Take a list of images and squash in to one image
-def squash(images):
-    pass
-
 # Reduce ambiguity
-def kmeans_color_correction(img, k):
+def kMeans(img, k):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32) #create 2d array
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2) #criteria to stop running the kmeans if any criteria is met
@@ -106,7 +103,7 @@ def kmeans_color_correction(img, k):
     
     return corrected_img
 
-def gray_scale(img):
+def greyscale(img):
     mask = np.any(img != [0,0,0], axis=-1) #create a map of all pixels in the img that are not black and use -1 to compare all RGB values
         
     color_image = np.zeros_like(img) #create a blacked out image
@@ -114,7 +111,7 @@ def gray_scale(img):
 
     return color_image
 
-def squash_img(filtered_imgs):
+def squash(filtered_imgs):
     height, width, channels = filtered_imgs[0].shape #find the shape of the image
 
     combined_img = np.zeros((height, width, channels), dtype=np.uint8) #create initial blacked out image
