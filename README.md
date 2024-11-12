@@ -1,6 +1,5 @@
 # CroplandCROS Noise Correction Algorithm
-A pipeline to reduce noise from samples of the CroplandCROS dataset which utilizes K Mean Clustering, Normalization, 
-Morphological Open and Close operations to extract dominant colors, split, reduce background splatters, and then fill holes.
+Reduce and correct noise in samples of CroplandCROS dataset.
 
 ## Dependencies
 * Python 3
