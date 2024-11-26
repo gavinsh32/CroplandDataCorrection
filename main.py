@@ -22,8 +22,8 @@ def main():
     projections = project(input)    # split the input by each dominant color
 
     # save copies of all projections
-    # for i in range(0, len(projections)):
-    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+    for i in range(0, len(projections)):
+        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
 
     # apply morphological transformations to further reduce noise
     morphs = [] 
@@ -32,8 +32,8 @@ def main():
         morphs.append(morphed)
     
     # save a copy of all the morphed images
-    # for i in range(0, len(morphs)):
-    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+    for i in range(0, len(morphs)):
+        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
     # Save results
     cv.imwrite(f'output.jpg', squash(morphs))
