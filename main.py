@@ -6,6 +6,8 @@
 
 import os
 import sys
+from tkinter import *
+from tkinter import ttk
 import cv2 as cv
 import numpy as np
 
@@ -59,7 +61,7 @@ def project(img) -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection: cv.typing.MatLike, option):
+def morph(projection, option):
     # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
 
