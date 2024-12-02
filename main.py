@@ -14,6 +14,7 @@ from tkinter import filedialog as fd
 
 inputPath = ""
 input = None
+currentPath = ""
 
 # Main engine
 def main():
@@ -39,26 +40,26 @@ def main():
 
     root.mainloop()
 
-    # input = kMeans(input, k=9)      # find k most dominant colors in the input
+    input = kMeans(input, k=9)      # find k most dominant colors in the input
 
-    # projections = project(input)    # split the input by each dominant color
+    projections = project(input)    # split the input by each dominant color
 
-    # # save copies of all projections
-    # for i in range(0, len(projections)):
-    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+    # save copies of all projections
+    for i in range(0, len(projections)):
+        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
 
-    # # apply morphological transformations to further reduce noise
-    # morphs = [] 
-    # for i in range(0, len(projections)):
-    #     morphed = morph(projections[i], 2)
-    #     morphs.append(morphed)
+    # apply morphological transformations to further reduce noise
+    morphs = [] 
+    for i in range(0, len(projections)):
+        morphed = morph(projections[i], 2)
+        morphs.append(morphed)
     
-    # # save a copy of all the morphed images
-    # for i in range(0, len(morphs)):
-    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+    # save a copy of all the morphed images
+    for i in range(0, len(morphs)):
+        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
-    # # Save results
-    # cv.imwrite(f'output.jpg', squash(morphs))
+    # Save results
+    cv.imwrite(f'output.jpg', squash(morphs))
 
 # Open a file and get it's path
 def open() -> bool:
