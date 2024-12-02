@@ -20,7 +20,7 @@ def main():
 
     while True:
         options = displayOptions()
-        if len(options) < 2:
+        if len(options) > 2:
             break
 
     outputImg = correct2(inputImg, 9, 2)
@@ -165,6 +165,9 @@ def squash(filtered_imgs):
                     combined_img[i,j] = img[i,j]
 
     print("Squashing complete")
+
+    cv.imshow('Image Window', combined_img)
+    cv.waitKey(0)
     return combined_img
 
 if __name__ == '__main__':
