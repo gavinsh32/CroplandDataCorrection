@@ -10,6 +10,7 @@ import cv2 as cv
 import numpy as np
 import tkinter as tk
 from tkinter import *
+from enum import Enum
 
 def main():
     # Check arguments
@@ -22,7 +23,7 @@ def main():
         if len(options) < 2:
             break
 
-    outputImg = correct(inputImg, 9, 2)
+    outputImg = correct2(inputImg, 9, 2)
 
     # Save results
     cv.imwrite(f'output.jpg', outputImg) 
@@ -43,8 +44,23 @@ def displayOptions():
     print("Enter your desired options: ")
     return str(input()).split(' ')
 
+def correct(options):
+    class State(Enum):
+        CLUSTER = 0
+        FUNCTION = 1
+        INPUTNUM = 2
+        INPUTSTR = 3
+    state = State.CLUSTER
+    for option in options:
+        match option:
+            case "kmeans":
+                if state == State.CLUSTER:
+                    state == State.INPUTNUM    # expecting int
+            case _:
+                break
+
 # Main engine
-def correct(img, k, morphOption):
+def correct2(img, k, morphOption):
     input = kMeans(img, k=k)      # find k most dominant colors in the input
 
     projections = project(img)    # split the input by each dominant color
