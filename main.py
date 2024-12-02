@@ -17,6 +17,8 @@ input = None
 
 # Main engine
 def main():
+    global input, inputPath
+
     setup()     # create a new run directory
 
     root = tk.Tk()
@@ -62,6 +64,8 @@ def main():
 
 # Open a file and get it's path
 def open() -> bool:
+    global input, inputPath
+
     inputPath = fd.askopenfilename(
                     title='Select Input File', 
                     initialdir='.', 
@@ -73,13 +77,15 @@ def open() -> bool:
                 )
     dir = os.path.dirname(inputPath)
     # Load image and check args
-    input = cv.imread(inputPath)
+    input = cv.imread(inputPath)  
     print("Image " + inputPath + " loaded successfully.")
     return False if input is None else True
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
+    global input, inputPath
+
     i = 0
     name = 'run'
     while os.path.exists(name + str(i)):
@@ -92,7 +98,9 @@ def setup() -> None:
     dir = name + str(i)
     input = cv.imread(name)
 
-def project(img=input) -> list:
+def project() -> list:
+    global input
+    img = input
     if img is None:
         print("Image could not be loaded. Check the file path.")
     unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
