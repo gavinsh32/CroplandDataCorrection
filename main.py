@@ -19,7 +19,7 @@ def main():
     output = correct(input, 9, 2)
 
     # Save results
-    cv.imwrite(f'output.jpg', ) 
+    cv.imwrite(f'output.jpg', output) 
 
 # Main engine
 def correct(img, k, morphOption):
