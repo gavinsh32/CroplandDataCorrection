@@ -9,15 +9,17 @@ import sys
 import cv2 as cv
 import numpy as np
 import tkinter as tk
+import shutil
 from tkinter import ttk
 from tkinter import filedialog as fd
 
 inputPath = ""
 input = None
+name = ""  #make global so we can delete it at the end
 
 # Main engine
 def main():
-    global input, inputPath
+    global name
 
     setup()     # create a new run directory
 
@@ -40,6 +42,8 @@ def main():
     # View Previous
 
     root.mainloop()
+
+    shutil.rmtree(name)
 
     # input = kMeans(input, k=9)      # find k most dominant colors in the input
 
@@ -84,7 +88,7 @@ def open() -> bool:
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
-    global input, inputPath
+    global input, inputPath, name
 
     i = 0
     name = 'run'
