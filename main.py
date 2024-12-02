@@ -6,13 +6,33 @@
 
 import os
 import sys
-from tkinter import *
-from tkinter import ttk
 import cv2 as cv
 import numpy as np
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog as fd
 
 # Main engine
 def main():
+
+    root = tk.Tk()
+    root.title("Cropland Data Corrector")
+    root.geometry('300x300')
+
+    kMeansButton = tk.Button(root, text="Hello, Tkinter!")
+    name = fd.askopenfilename(
+        title='Select Input File',
+        initialdir='.',
+        filetypes=(
+            ('JPG', '*.jpg'),
+            ('TIF', '*.tif')            
+        )
+    )
+
+    print(name)
+
+    root.mainloop()
+
     # Load image and check args
     assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
     input = cv.imread(sys.argv[1])
@@ -61,7 +81,7 @@ def project(img) -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection, option):
+def morph(projection: cv.typing.MatLike, option):
     # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
 
