@@ -9,15 +9,21 @@ import sys
 import cv2 as cv
 import numpy as np
 
-# Main engine
+
 def main():
     # Load image and check args
     assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
+    
     input = cv.imread(sys.argv[1])
-    assert input is not None, "Image " + sys.argv[1] + " failed to load."
-    print("Image " + sys.argv[1] + " loaded successfully.")
 
-    input = kMeans(input, k=9)      # find k most dominant colors in the input
+    output = correct(input, 9, 2)
+
+    # Save results
+    cv.imwrite(f'output.jpg', ) 
+
+# Main engine
+def correct(img, k, morphOption):
+    input = kMeans(input, k=k)      # find k most dominant colors in the input
 
     projections = project(input)    # split the input by each dominant color
 
@@ -28,15 +34,14 @@ def main():
     # apply morphological transformations to further reduce noise
     morphs = [] 
     for i in range(0, len(projections)):
-        morphed = morph(projections[i], 2)
+        morphed = morph(projections[i], morphOption)
         morphs.append(morphed)
     
     # save a copy of all the morphed images
     for i in range(0, len(morphs)):
         cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
-    # Save results
-    cv.imwrite(f'output.jpg', squash(morphs))
+    return squash(morphs)
 
 def project(img) -> list:
     if img is None:
