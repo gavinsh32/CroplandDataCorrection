@@ -8,103 +8,37 @@ import os
 import sys
 import cv2 as cv
 import numpy as np
-import tkinter as tk
-import shutil
-from tkinter import ttk
-from tkinter import filedialog as fd
-
-inputPath = ""
-input = None
-name = ""  #make global so we can delete it at the end
 
 # Main engine
 def main():
-    global name
-
-    setup()     # create a new run directory
-
-    root = tk.Tk()
-    root.title("Cropland Data Corrector")
-    root.geometry('300x300')
-
-    openButton = tk.Button(root, text="Open Input", command=open)
-    openButton.grid(row=0, column=0)
-
-    projectButton = tk.Button(root, text="Project by Color", command=project)
-    projectButton.grid(row=1, column=0)
-
-    # buttons for functions
-    # cluster1
-    # cluster2
-    # morphOpenButton
-    # morphCloseButton
-    # View Next
-    # View Previous
-
-    root.mainloop()
-
-    shutil.rmtree(name)
-
-    # input = kMeans(input, k=9)      # find k most dominant colors in the input
-
-    # projections = project(input)    # split the input by each dominant color
-
-    # # save copies of all projections
-    # for i in range(0, len(projections)):
-    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
-
-    # # apply morphological transformations to further reduce noise
-    # morphs = [] 
-    # for i in range(0, len(projections)):
-    #     morphed = morph(projections[i], 2)
-    #     morphs.append(morphed)
-    
-    # # save a copy of all the morphed images
-    # for i in range(0, len(morphs)):
-    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
-
-    # # Save results
-    # cv.imwrite(f'output.jpg', squash(morphs))
-
-# Open a file and get it's path
-def open() -> bool:
-    global input, inputPath
-
-    inputPath = fd.askopenfilename(
-                    title='Select Input File', 
-                    initialdir='.', 
-                    filetypes=(
-                        ('JPG', '*.jpg'),
-                        ('JPEG', '*.jpeg'),
-                        ('TIF', '*.tif')            
-                    )
-                )
-    dir = os.path.dirname(inputPath)
     # Load image and check args
-    input = cv.imread(inputPath)  
-    print("Image " + inputPath + " loaded successfully.")
-    return False if input is None else True
+    assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
+    input = cv.imread(sys.argv[1])
+    assert input is not None, "Image " + sys.argv[1] + " failed to load."
+    print("Image " + sys.argv[1] + " loaded successfully.")
 
-# Create a new folder for operating with folders for each intermediate file
-# such as morphs, projections, etc.
-def setup() -> None:
-    global input, inputPath, name
+    input = kMeans(input, k=9)      # find k most dominant colors in the input
 
-    i = 0
-    name = 'run'
-    while os.path.exists(name + str(i)):
-        i += 1
-    name = name + str(i)
-    os.mkdir(name)
-    os.mkdir(name + '/' + 'clusters')
-    os.mkdir(name + '/' + 'projections')
-    os.mkdir(name + '/' + 'morphs')
-    dir = name + str(i)
-    input = cv.imread(name)
+    projections = project(input)    # split the input by each dominant color
 
-def project() -> list:
-    global input
-    img = input
+    # save copies of all projections
+    for i in range(0, len(projections)):
+        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+
+    # apply morphological transformations to further reduce noise
+    morphs = [] 
+    for i in range(0, len(projections)):
+        morphed = morph(projections[i], 2)
+        morphs.append(morphed)
+    
+    # save a copy of all the morphed images
+    for i in range(0, len(morphs)):
+        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+
+    # Save results
+    cv.imwrite(f'output.jpg', squash(morphs))
+
+def project(img) -> list:
     if img is None:
         print("Image could not be loaded. Check the file path.")
     unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
@@ -125,7 +59,7 @@ def project() -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection, option):
+def morph(projection: cv.typing.MatLike, option):
     # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
 
@@ -154,7 +88,7 @@ def morph(projection, option):
     return output 
 
 # Reduce ambiguity
-def kMeans(img=inputPath, k=any):
+def kMeans(img, k):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32) #create 2d array
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2) #criteria to stop running the kmeans if any criteria is met
