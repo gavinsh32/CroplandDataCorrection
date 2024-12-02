@@ -63,7 +63,7 @@ def correct(options):
 def correct2(img, k, morphOption):
     input = kMeans(img, k=k)      # find k most dominant colors in the input
 
-    projections = project(img)    # split the input by each dominant color
+    projections = project(input)    # split the input by each dominant color
 
     # save copies of all projections
     for i in range(0, len(projections)):
