@@ -8,24 +8,46 @@ import os
 import sys
 import cv2 as cv
 import numpy as np
-
+import tkinter as tk
+from tkinter import *
 
 def main():
-    # Load image and check args
-    assert len(sys.argv) > 1, "Correct usage: python main.py path-to-input.jpg"
+    # Check arguments
+    assert len(sys.argv) == 2, "Correct usage: python main.py path-to-input.jpg"
     
-    input = cv.imread(sys.argv[1])
+    inputImg = cv.imread(sys.argv[1])  # read input from command line
 
-    output = correct(input, 9, 2)
+    while True:
+        options = displayOptions()
+        if len(options) < 2:
+            break
+
+    outputImg = correct(inputImg, 9, 2)
 
     # Save results
-    cv.imwrite(f'output.jpg', output) 
+    cv.imwrite(f'output.jpg', outputImg) 
+
+def welcome():
+    print("Welcome to CroplandDataCorrector\
+          \nA tool made by Gavin Haynes & Ibrahim Monsour")
+
+def displayOptions():
+    print("\
+          \nTo use this program, enter a series of operations you wish to\
+          \napply. This engine is designed to apply clustering, where\
+          \ndominant colors are first identified, and then image manipulation\
+          \nfunctions.\
+          \n\nFor example: kmeans 9 morph open morph close\
+          \n\nmodifies the image using K-Means Clustering with a paramater of 9,\
+          \nMorphological Opening, and then Closing.\n")
+    print("Enter your desired options: ")
+    return str(input()).split(' ')
 
 # Main engine
 def correct(img, k, morphOption):
-    input = kMeans(input, k=k)      # find k most dominant colors in the input
+    input = kMeans(img, k=k)      # find k most dominant colors in the input
 
-    projections = project(input)    # split the input by each dominant color
+    projections = project(img)    # split the input by each dominant color
 
     # save copies of all projections
     for i in range(0, len(projections)):
@@ -64,7 +86,7 @@ def project(img) -> list:
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
 # and then fill in remaining holes.
-def morph(projection: cv.typing.MatLike, option):
+def morph(projection, option):
     # make rectangular kernel for uniform results
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3)) 
 
@@ -125,6 +147,8 @@ def squash(filtered_imgs):
             for img in filtered_imgs:
                 if np.array_equal(combined_img[i,j], [0,0,0]): #check if pixel is black which means it can be changed
                     combined_img[i,j] = img[i,j]
+
+    print("Squashing complete")
     return combined_img
 
 if __name__ == '__main__':
