@@ -9,59 +9,17 @@ import sys
 import cv2 as cv
 import numpy as np
 import tkinter as tk
-from tkinter import *
-from enum import Enum
+import shutil
+from tkinter import ttk
+from tkinter import filedialog as fd
 
-def main():
-    # Check arguments
-    assert len(sys.argv) == 2, "Correct usage: python main.py path-to-input.jpg"
-    
-    inputImg = cv.imread(sys.argv[1])  # read input from command line
-
-    while True:
-        options = displayOptions()
-        if len(options) > 2:
-            break
-
-    outputImg = correct2(inputImg, 9, 2)
-
-    # Save results
-    cv.imwrite(f'output.jpg', outputImg) 
-
-def welcome():
-    print("Welcome to CroplandDataCorrector\
-          \nA tool made by Gavin Haynes & Ibrahim Monsour")
-
-def displayOptions():
-    print("\
-          \nTo use this program, enter a series of operations you wish to\
-          \napply. This engine is designed to apply clustering, where\
-          \ndominant colors are first identified, and then image manipulation\
-          \nfunctions.\
-          \n\nFor example: kmeans 9 morph open morph close\
-          \n\nmodifies the image using K-Means Clustering with a paramater of 9,\
-          \nMorphological Opening, and then Closing.\n")
-    print("Enter your desired options: ")
-    return str(input()).split(' ')
-
-def correct(options):
-    class State(Enum):
-        CLUSTER = 0
-        FUNCTION = 1
-        INPUTNUM = 2
-        INPUTSTR = 3
-    state = State.CLUSTER
-    for option in options:
-        match option:
-            case "kmeans":
-                if state == State.CLUSTER:
-                    state == State.INPUTNUM    # expecting int
-            case _:
-                break
+inputPath = ""
+input = None
+name = ""  #make global so we can delete it at the end
 
 # Main engine
-def correct2(img, k, morphOption):
-    input = kMeans(img, k=k)      # find k most dominant colors in the input
+def main():
+    input = kMeans(input, k=9)      # find k most dominant colors in the input
 
     projections = project(input)    # split the input by each dominant color
 
@@ -72,16 +30,55 @@ def correct2(img, k, morphOption):
     # apply morphological transformations to further reduce noise
     morphs = [] 
     for i in range(0, len(projections)):
-        morphed = morph(projections[i], morphOption)
+        morphed = morph(projections[i], 2)
         morphs.append(morphed)
     
     # save a copy of all the morphed images
     for i in range(0, len(morphs)):
         cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
-    return squash(morphs)
+    # Save results
+    cv.imwrite(f'output.jpg', squash(morphs))
 
-def project(img) -> list:
+# Open a file and get it's path
+def open() -> bool:
+    global input, inputPath
+
+    inputPath = fd.askopenfilename(
+                    title='Select Input File', 
+                    initialdir='.', 
+                    filetypes=(
+                        ('JPG', '*.jpg'),
+                        ('JPEG', '*.jpeg'),
+                        ('TIF', '*.tif')            
+                    )
+                )
+    dir = os.path.dirname(inputPath)
+    # Load image and check args
+    input = cv.imread(inputPath)  
+    print("Image " + inputPath + " loaded successfully.")
+    return False if input is None else True
+
+# Create a new folder for operating with folders for each intermediate file
+# such as morphs, projections, etc.
+def setup() -> None:
+    global input, inputPath, name
+
+    i = 0
+    name = 'run'
+    while os.path.exists(name + str(i)):
+        i += 1
+    name = name + str(i)
+    os.mkdir(name)
+    os.mkdir(name + '/' + 'clusters')
+    os.mkdir(name + '/' + 'projections')
+    os.mkdir(name + '/' + 'morphs')
+    dir = name + str(i)
+    input = cv.imread(name)
+
+def project() -> list:
+    global input
+    img = input
     if img is None:
         print("Image could not be loaded. Check the file path.")
     unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
@@ -131,7 +128,7 @@ def morph(projection, option):
     return output 
 
 # Reduce ambiguity
-def kMeans(img, k):
+def kMeans(img=inputPath, k=any):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32) #create 2d array
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2) #criteria to stop running the kmeans if any criteria is met
@@ -163,11 +160,6 @@ def squash(filtered_imgs):
             for img in filtered_imgs:
                 if np.array_equal(combined_img[i,j], [0,0,0]): #check if pixel is black which means it can be changed
                     combined_img[i,j] = img[i,j]
-
-    print("Squashing complete")
-
-    cv.imshow('Image Window', combined_img)
-    cv.waitKey(0)
     return combined_img
 
 if __name__ == '__main__':
