@@ -9,12 +9,17 @@ import sys
 import cv2 as cv
 import numpy as np
 import tkinter as tk
+import shutil
 from tkinter import ttk
 from tkinter import filedialog as fd
 
 inputPath = ""
 input = None
+<<<<<<< HEAD
 currentPath = ""
+=======
+name = ""  #make global so we can delete it at the end
+>>>>>>> 930c51a101225fe3068203fab9632b0407900d6e
 
 # Main engine
 def main():
@@ -41,6 +46,8 @@ def main():
 
 # Open a file and get it's path
 def open() -> bool:
+    global input, inputPath
+
     inputPath = fd.askopenfilename(
                     title='Select Input File', 
                     initialdir='.', 
@@ -52,13 +59,15 @@ def open() -> bool:
                 )
     dir = os.path.dirname(inputPath)
     # Load image and check args
-    input = cv.imread(inputPath)
+    input = cv.imread(inputPath)  
     print("Image " + inputPath + " loaded successfully.")
     return False if input is None else True
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
+    global input, inputPath, name
+
     i = 0
     name = 'run'
     while os.path.exists(name + str(i)):
@@ -71,7 +80,9 @@ def setup() -> None:
     dir = name + str(i)
     input = cv.imread(name)
 
-def project(img=input) -> list:
+def project() -> list:
+    global input
+    img = input
     if img is None:
         print("Image could not be loaded. Check the file path.")
     unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
