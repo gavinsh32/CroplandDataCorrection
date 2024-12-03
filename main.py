@@ -18,28 +18,6 @@ currentPath = ""
 
 # Main engine
 def main():
-    setup()     # create a new run directory
-
-    root = tk.Tk()
-    root.title("Cropland Data Corrector")
-    root.geometry('300x300')
-
-    openButton = tk.Button(root, text="Open Input", command=open)
-    openButton.grid(row=0, column=0)
-
-    projectButton = tk.Button(root, text="Project by Color", command=project)
-    projectButton.grid(row=1, column=0)
-
-    # buttons for functions
-    # cluster1
-    # cluster2
-    # morphOpenButton
-    # morphCloseButton
-    # View Next
-    # View Previous
-
-    root.mainloop()
-
     input = kMeans(input, k=9)      # find k most dominant colors in the input
 
     projections = project(input)    # split the input by each dominant color
