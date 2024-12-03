@@ -15,11 +15,7 @@ from tkinter import filedialog as fd
 
 inputPath = ""
 input = None
-<<<<<<< HEAD
-currentPath = ""
-=======
 name = ""  #make global so we can delete it at the end
->>>>>>> 930c51a101225fe3068203fab9632b0407900d6e
 
 # Main engine
 def main():
@@ -62,6 +58,12 @@ def open() -> bool:
     input = cv.imread(inputPath)  
     print("Image " + inputPath + " loaded successfully.")
     return False if input is None else True
+
+# Tokenize
+def parseAlgs(cmd: str) -> list:
+    cmd = cmd.split(' ')    # tokenize 
+    
+    pass
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
