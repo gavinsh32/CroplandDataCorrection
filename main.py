@@ -28,28 +28,31 @@ class State(Enum):
 def main():
     #printWelcome()
 
-    inputlocal = None
+    inputlocal = open()
     result = []
 
-    state = State.LOAD
-    while True:
-        match state:
-            case State.LOAD:
-                inputlocal = open()  # prompt user for input image
-                stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
-                if stdin == 'yes':
-                    inputlocal = defaultmodel(inputlocal)
-                    break
-                state = State.FIRST
-            case State.FIRST:
-                result = pickClusterFunction(inputlocal)
-                state = State.SECOND
-            case State.SECOND:
-                printFilterOptions()
-                option = input()
-                pickFilterFunc()
-            case _:
-                break
+    
+
+
+    # state = State.LOAD
+    # while True:
+    #     match state:
+    #         case State.LOAD:
+    #             inputlocal = open()  # prompt user for input image
+    #             stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
+    #             if stdin == 'yes':
+    #                 inputlocal = defaultmodel(inputlocal)
+    #                 break
+    #             state = State.FIRST
+    #         case State.FIRST:
+    #             result = pickClusterFunction(inputlocal)
+    #             state = State.SECOND
+    #         case State.SECOND:
+    #             printFilterOptions()
+    #             option = input()
+    #             pickFilterFunc()
+    #         case _:
+    #             break
 
     # input = kMeans(input, k=9)      # find k most dominant colors in the input
 
