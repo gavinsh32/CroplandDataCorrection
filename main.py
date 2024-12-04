@@ -15,24 +15,27 @@ from tkinter import filedialog as fd
 from enum import Enum
 
 inputPath = ""
-input = None
 name = ""  #make global so we can delete it at the end
 
 # Main engine
 def main():
     #printWelcome()
 
-    input = None
+    inputlocal = None
     result = []
 
     state = State.LOAD
     while True:
         match state:
             case State.LOAD:
-                input = open()  # prompt user for input image
+                inputlocal = open()  # prompt user for input image
+                stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
+                if stdin == 'yes':
+                    inputlocal = defaultmodel(inputlocal)
+                    break
                 state = State.FIRST
             case State.FIRST:
-                result = pickClusterFunction(input())
+                result = pickClusterFunction(inputlocal)
                 state = State.SECOND
             case State.SECOND:
                 printFilterOptions()
@@ -66,8 +69,8 @@ def main():
     # cv.imwrite(f'output.jpg', squash(morphs))
 
 # Open a file and get it's path
-def open() -> bool:
-    global input, inputPath
+def open():
+    global inputPath
 
     inputPath = fd.askopenfilename(
                     title='Select Input File', 
@@ -82,7 +85,40 @@ def open() -> bool:
     # Load image and check args
     input = cv.imread(inputPath)  
     print("Image " + inputPath + " loaded successfully.")
-    return False if input is None else True
+    return input
+
+def defaultmodel(input):
+    input = kMeans(input, k=9)      # find k most dominant colors in the input
+    projections = project(input)    # split the input by each dominant color
+
+    # save copies of all projections
+    for i in range(0, len(projections)):
+        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+
+    # apply morphological transformations to further reduce noise
+    morphs = [] 
+    for i in range(0, len(projections)):
+        morphed = morph(projections[i], 2)
+        morphs.append(morphed)
+    
+    # save a copy of all the morphed images
+    for i in range(0, len(morphs)):
+        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+
+    # Save results
+    cv.imwrite(f'output.jpg', squash(morphs))
+
+def pickClusterFunction(inputlocal):
+    print("Now that you have loaded your image it is time to select your intial cluster function.")
+    print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
+    print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
+
+    stdin = int(input("\nPlease select the cluster algorithm you would like to use: kmeans = 1, other options not yet added\n"))
+
+    match stdin:
+        case 1:
+            num = int(input("\nPlease enter the number of dominant colors you want identified: "))
+            return kMeans(inputlocal, num)
 
 def resize(scalar):
     return cv.resize( cv.Ne)
@@ -122,7 +158,7 @@ def parseAlgs(cmd: str) -> bool:
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
-    global input, inputPath, name
+    global inputPath, name
 
     i = 0
     name = 'run'
@@ -135,9 +171,9 @@ def setup() -> None:
     os.mkdir(name + '/' + 'morphs')
     dir = name + str(i)
     input = cv.imread(name)
+    return input
 
-def project() -> list:
-    global input
+def project(input) -> list:
     img = input
     if img is None:
         print("Image could not be loaded. Check the file path.")
@@ -188,7 +224,7 @@ def morph(projection, option):
     return output 
 
 # Reduce ambiguity
-def kMeans(img=inputPath, k=any):
+def kMeans(img, k):
     img_reshaped = img.reshape((-1, 3)).astype(np.float32) #create 2d array
 
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 100, 0.2) #criteria to stop running the kmeans if any criteria is met
