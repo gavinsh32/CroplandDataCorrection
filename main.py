@@ -39,6 +39,7 @@ def main():
                 stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
                 if stdin == 'yes':
                     inputlocal = defaultmodel(inputlocal)
+                    viewCompare(inputlocal, inputlocal)
                     break
                 state = State.FIRST
             case State.FIRST:
@@ -110,7 +111,10 @@ def defaultmodel(input):
         cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
     # Save results
-    cv.imwrite(f'output.jpg', squash(morphs))
+    result = squash(morphs)
+    cv.imwrite(f'output.jpg', result)
+
+    return result
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
@@ -142,6 +146,15 @@ def resize(scalar):
 
 def viewGrid(resultList):
     cv.append()
+
+def viewCompare(input_img, output_img):
+    output_img = cv.copyMakeBorder(output_img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
+    input_img = cv.copyMakeBorder(input_img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
+    side_by_side = np.hstack((input_img, output_img))
+    
+    cv.imshow("Input vs Output", side_by_side)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
 # Tokenize
 def parseAlgs(cmd: str) -> bool:
