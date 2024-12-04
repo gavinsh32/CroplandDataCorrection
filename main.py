@@ -12,6 +12,7 @@ import tkinter as tk
 import shutil
 from tkinter import ttk
 from tkinter import filedialog as fd
+from enum import Enum
 
 inputPath = ""
 input = None
@@ -19,26 +20,50 @@ name = ""  #make global so we can delete it at the end
 
 # Main engine
 def main():
-    input = kMeans(input, k=9)      # find k most dominant colors in the input
+    #printWelcome()
 
-    projections = project(input)    # split the input by each dominant color
+    input = None
+    result = []
 
-    # save copies of all projections
-    for i in range(0, len(projections)):
-        cv.imwrite(f'projections/projection{i}.jpg', projections[i])
-
-    # apply morphological transformations to further reduce noise
-    morphs = [] 
-    for i in range(0, len(projections)):
-        morphed = morph(projections[i], 2)
-        morphs.append(morphed)
+    state = State.LOAD
+    while True:
+        match state:
+            case State.LOAD:
+                input = open()  # prompt user for input image
+                state = State.FIRST
+            case State.FIRST:
+                result = pickClusterFunction(input())
+                state = State.SECOND
+            case State.SECOND:
+                printFilterOptions()
+                option = input()
+                pickFilterFunc()
+            case _:
+                break
+        pass
     
-    # save a copy of all the morphed images
-    for i in range(0, len(morphs)):
-        cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+    
 
-    # Save results
-    cv.imwrite(f'output.jpg', squash(morphs))
+    # input = kMeans(input, k=9)      # find k most dominant colors in the input
+
+    # projections = project(input)    # split the input by each dominant color
+
+    # # save copies of all projections
+    # for i in range(0, len(projections)):
+    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
+
+    # # apply morphological transformations to further reduce noise
+    # morphs = [] 
+    # for i in range(0, len(projections)):
+    #     morphed = morph(projections[i], 2)
+    #     morphs.append(morphed)
+    
+    # # save a copy of all the morphed images
+    # for i in range(0, len(morphs)):
+    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
+
+    # # Save results
+    # cv.imwrite(f'output.jpg', squash(morphs))
 
 # Open a file and get it's path
 def open() -> bool:
@@ -59,11 +84,40 @@ def open() -> bool:
     print("Image " + inputPath + " loaded successfully.")
     return False if input is None else True
 
+def resize(scalar):
+    return cv.resize( cv.Ne)
+
+def viewGrid(resultList):
+    cv.append()
+
+class State(Enum):
+    FIRST = 0,
+    SECOND = 1,
+    INPUT = 2,
+    LOAD = 3,
+    SQUASH = 4
+
 # Tokenize
-def parseAlgs(cmd: str) -> list:
+def parseAlgs(cmd: str) -> bool:
     cmd = cmd.split(' ')    # tokenize 
-    
-    pass
+    state = State.FIRST
+    prev = ''
+    # parser engine
+    # commands are in the form kmeans 9 or morph open or morph close,
+    # containing one command and one argument
+    for tok in cmd:
+        match (state):
+            case State.FIRST:   # first stage, clustering
+                # prompt for kmeans value
+                state = State.SECOND # expecting value
+            case State.SECOND:  # second stage, multi image processing
+                pass
+            case State.INPUT:   # expecting a value
+                pass
+            case _:
+                return False
+        prev = tok  # store current token
+    return True
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
