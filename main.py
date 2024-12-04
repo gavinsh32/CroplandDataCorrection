@@ -16,6 +16,7 @@ from enum import Enum
 
 inputPath = ""
 name = ""  #make global so we can delete it at the end
+filters = ['morphOpen', 'morphClose', 'Canny']
 
 class State(Enum):
     FIRST = 0,
@@ -31,8 +32,7 @@ def main():
     inputlocal = open()
     result = []
 
-    
-
+    option = showFilterOptions()
 
     # state = State.LOAD
     # while True:
@@ -81,7 +81,7 @@ def open():
 
     inputPath = fd.askopenfilename(
                     title='Select Input File', 
-                    initialdir='.', 
+                    initialdir='./input', 
                     filetypes=(
                         ('JPG', '*.jpg'),
                         ('JPEG', '*.jpeg'),
@@ -115,6 +115,11 @@ def defaultmodel(input):
     # Save results
     cv.imwrite(f'output.jpg', squash(morphs))
 
+def pickFilter(option, imgs):
+    match option:
+        case 0:
+            morph
+
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
     return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
@@ -132,12 +137,12 @@ def pickClusterFunction(inputlocal):
             return kMeans(inputlocal, num)
 
 def showFilterOptions():
-    options = ['morphOpen', 'morphClose', '']
-    i = 1
-    print('Filtering Options:')
-    for option in options:
-        print(repr(i) + '. ' + option)
+    i = 0
+    print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
+    print('Options:')
+    for option in filters:
         i += 1
+        print(repr(i) + '. ' + option)
     print(f'\nEnter an option [1-{i}]:')
     return input()
 
