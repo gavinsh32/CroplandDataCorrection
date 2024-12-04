@@ -16,7 +16,7 @@ from enum import Enum
 
 inputPath = ""
 name = ""  #make global so we can delete it at the end
-filters = ['morphOpen', 'morphClose', 'Canny']
+filters = ['Morphological Closing', 'Morphological Opening', 'Canny']
 
 class State(Enum):
     FIRST = 0,
@@ -29,10 +29,19 @@ class State(Enum):
 def main():
     #printWelcome()
 
-    inputlocal = open()
-    result = []
+    inputlocal = open() # input image
+    results = []    # result of previous filter operation
+
+    inputlocal = kMeans(inputlocal, 9)
+    results = project(inputlocal)
 
     option = showFilterOptions()
+
+    for result in results:
+        result = filter(option, result)
+
+    output = squash(results)
+    cv.imwrite('output.jpg', output)
 
     # state = State.LOAD
     # while True:
@@ -130,6 +139,10 @@ def filter(option, img):
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
     return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
+
+# Apply Canny edge detector to img with thresholds t1 and t2
+def canny(img, t1, t2):
+    return cv.Canny(img, t1, t2)
 
 def pickClusterFunction(inputlocal):
     print("Now that you have loaded your image it is time to select your intial cluster function.")
