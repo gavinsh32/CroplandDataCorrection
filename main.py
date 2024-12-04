@@ -4,6 +4,11 @@
 # Fall '24
 # An algorithm to clean noise from the CroplandCROS dataset
 
+# To Do:
+#   viewGrid() - Ibrahim
+#   viewComparison() - Ibrahim
+#   
+
 import os
 import sys
 import cv2 as cv
@@ -40,6 +45,7 @@ def main():
         option = showFilterOptions()
 
         if option == 0: 
+            print("Squashing and saving...")
             break
         else:
             for result in results:
@@ -161,6 +167,8 @@ def pickClusterFunction(inputlocal):
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
             return kMeans(inputlocal, num)
 
+# Display options for filtering, which are defined
+# globally. Prompt the user for an option and check input.
 def showFilterOptions():
     i = 0
     print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
@@ -170,10 +178,10 @@ def showFilterOptions():
         i += 1
     print(f'\nEnter an option [1-{i}]:')
     option = input()            # prompt user for input
-    option = checkInput(option, i) # check if input is valid
-    return option
+    return option if checkInput(option, i) else 0
 
 # Check that input is a number and in range
+# return num if valid else 0
 def checkInput(num, max):
     return True if num is int and num >= 0 and num <= max else False
 
