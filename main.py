@@ -17,6 +17,13 @@ from enum import Enum
 inputPath = ""
 name = ""  #make global so we can delete it at the end
 
+class State(Enum):
+    FIRST = 0,
+    SECOND = 1,
+    INPUT = 2,
+    LOAD = 3,
+    SQUASH = 4
+
 # Main engine
 def main():
     #printWelcome()
@@ -43,9 +50,6 @@ def main():
                 pickFilterFunc()
             case _:
                 break
-        pass
-    
-    
 
     # input = kMeans(input, k=9)      # find k most dominant colors in the input
 
@@ -108,6 +112,10 @@ def defaultmodel(input):
     # Save results
     cv.imwrite(f'output.jpg', squash(morphs))
 
+# resize img to desired size (dx, dy) using Nearest Neighbor interpolation
+def resize(img, dx, dy):
+    return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
+
 def pickClusterFunction(inputlocal):
     print("Now that you have loaded your image it is time to select your intial cluster function.")
     print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
@@ -120,18 +128,20 @@ def pickClusterFunction(inputlocal):
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
             return kMeans(inputlocal, num)
 
+def showFilterOptions():
+    options = ['morphOpen', 'morphClose', '']
+    i = 1
+    print("Pick a filtering option:")
+    for option in options:
+        print(repr(i) + '. ' + option)
+        i += 1
+    return input()
+
 def resize(scalar):
     return cv.resize( cv.Ne)
 
 def viewGrid(resultList):
     cv.append()
-
-class State(Enum):
-    FIRST = 0,
-    SECOND = 1,
-    INPUT = 2,
-    LOAD = 3,
-    SQUASH = 4
 
 # Tokenize
 def parseAlgs(cmd: str) -> bool:
