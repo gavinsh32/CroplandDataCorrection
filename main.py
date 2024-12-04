@@ -16,7 +16,8 @@ from enum import Enum
 
 inputPath = ""
 name = ""  #make global so we can delete it at the end
-filters = ['Morphological Closing', 'Morphological Opening', 'Canny']
+filters = ['Squash and Exit', 'Morphological Closing', 'Morphological Opening', 
+           'Canny']
 
 class State(Enum):
     FIRST = 0,
@@ -35,10 +36,14 @@ def main():
     inputlocal = kMeans(inputlocal, 9)
     results = project(inputlocal)
 
-    option = showFilterOptions()
+    while True:
+        option = showFilterOptions()
 
-    for result in results:
-        result = filter(option, result)
+        if option == 0: 
+            break
+        else:
+            for result in results:
+                result = filter(option, result)
 
     output = squash(results)
     cv.imwrite('output.jpg', output)
@@ -160,11 +165,17 @@ def showFilterOptions():
     i = 0
     print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
     print('Options:')
-    for option in filters:
+    for filter in filters:
+        print(repr(i) + '. ' + filter)
         i += 1
-        print(repr(i) + '. ' + option)
     print(f'\nEnter an option [1-{i}]:')
-    return input()
+    option = input()            # prompt user for input
+    option = checkInput(option, i) # check if input is valid
+    return option
+
+# Check that input is a number and in range
+def checkInput(num, max):
+    return True if num is int and num >= 0 and num <= max else False
 
 def resize(scalar):
     return cv.resize( cv.Ne)
