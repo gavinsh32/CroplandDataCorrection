@@ -115,10 +115,17 @@ def defaultmodel(input):
     # Save results
     cv.imwrite(f'output.jpg', squash(morphs))
 
-def pickFilter(option, imgs):
+# pick a filter using option and apply it to img
+def filter(option, img):
     match option:
-        case 0:
-            morph
+        case 1:
+            return morph(img, 0)
+        case 2:
+            return morph(img, 1)
+        case 3:
+            return None
+        case _:
+            return None
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
