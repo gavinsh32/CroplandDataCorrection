@@ -131,10 +131,11 @@ def pickClusterFunction(inputlocal):
 def showFilterOptions():
     options = ['morphOpen', 'morphClose', '']
     i = 1
-    print("Pick a filtering option:")
+    print('Filtering Options:')
     for option in options:
         print(repr(i) + '. ' + option)
         i += 1
+    print(f'\nEnter an option [1-{i}]:')
     return input()
 
 def resize(scalar):
