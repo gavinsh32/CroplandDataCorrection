@@ -53,6 +53,7 @@ def main():
 
     output = squash(results)
     cv.imwrite('output.jpg', output)
+    cv.imshow('Final Output', output)
 
     # state = State.LOAD
     # while True:
@@ -137,6 +138,7 @@ def defaultmodel(input):
 
 # pick a filter using option and apply it to img
 def filter(option, img):
+    print('Applying' + filters[option] + '...')
     match option:
         case 1:
             return morph(img, 0)
@@ -145,6 +147,7 @@ def filter(option, img):
         case 3:
             return None
         case _:
+            print('Error: failed to apply filter option ' + repr(option))
             return None
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
@@ -169,7 +172,7 @@ def pickClusterFunction(inputlocal):
 
 # Display options for filtering, which are defined
 # globally. Prompt the user for an option and check input.
-def showFilterOptions():
+def showFilterOptions() -> int:
     i = 0
     print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
     print('Options:')
@@ -177,41 +180,18 @@ def showFilterOptions():
         print(repr(i) + '. ' + filter)
         i += 1
     print(f'\nEnter an option [1-{i}]:')
-    option = input()            # prompt user for input
+    option = int(input())            # prompt user for input
+
+    # return option if it's valid or 0 otherwise
     return option if checkInput(option, i) else 0
 
 # Check that input is a number and in range
 # return num if valid else 0
-def checkInput(num, max):
-    return True if num is int and num >= 0 and num <= max else False
-
-def resize(scalar):
-    return cv.resize( cv.Ne)
+def checkInput(num: int, max: int) -> bool:
+    return True if num >= 0 and num <= max else False
 
 def viewGrid(resultList):
     cv.append()
-
-# Tokenize
-def parseAlgs(cmd: str) -> bool:
-    cmd = cmd.split(' ')    # tokenize 
-    state = State.FIRST
-    prev = ''
-    # parser engine
-    # commands are in the form kmeans 9 or morph open or morph close,
-    # containing one command and one argument
-    for tok in cmd:
-        match (state):
-            case State.FIRST:   # first stage, clustering
-                # prompt for kmeans value
-                state = State.SECOND # expecting value
-            case State.SECOND:  # second stage, multi image processing
-                pass
-            case State.INPUT:   # expecting a value
-                pass
-            case _:
-                return False
-        prev = tok  # store current token
-    return True
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
