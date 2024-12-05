@@ -110,6 +110,8 @@ def defaultmodel(input):
     for i in range(0, len(morphs)):
         cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
 
+    viewGrid(morphs)
+
     # Save results
     result = squash(morphs)
     cv.imwrite(f'output.jpg', result)
@@ -145,7 +147,26 @@ def resize(scalar):
     return cv.resize( cv.Ne)
 
 def viewGrid(resultList):
-    cv.append()
+    length  = len(resultList)
+    rows = int(np.ceil(np.sqrt(length)))
+    cols = int(np.ceil(length / rows))
+
+    resultList_with_borders = []
+    for img in resultList:
+        bordered_img = cv.copyMakeBorder(img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
+        resultList_with_borders.append(bordered_img)
+
+    rows_images = []
+    for i in range(rows):
+        row_images = resultList_with_borders[i * cols:(i + 1) * cols]
+        row = np.hstack(row_images)
+        rows_images.append(row)
+    
+    grid = np.vstack(rows_images)
+
+    cv.imshow("Image Grid", grid)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
 def viewCompare(input_img, output_img):
     output_img = cv.copyMakeBorder(output_img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
