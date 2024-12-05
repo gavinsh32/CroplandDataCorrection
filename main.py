@@ -48,12 +48,15 @@ def main():
             print("Squashing and saving...")
             break
         else:
-            for result in results:
-                result = filter(option, result)
+            oldResults = results
+            results = []
+            for result in oldResults:
+                results.append(filter(option, result))
 
     output = squash(results)
     cv.imwrite('output.jpg', output)
     cv.imshow('Final Output', output)
+    cv.waitKey(0)
 
     # state = State.LOAD
     # while True:
