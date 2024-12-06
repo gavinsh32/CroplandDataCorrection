@@ -20,7 +20,6 @@ from tkinter import filedialog as fd
 from enum import Enum
 
 inputPath = ""
-name = ""  #make global so we can delete it at the end
 filters = ['Squash and Exit', 'View All', 'Morphological Closing', 'Morphological Opening', 
            'Canny']
 
@@ -33,29 +32,27 @@ class State(Enum):
 
 # Main engine
 def main():
-    #printWelcome()
-    input = None       # input image
+    welcome()
+    inputImg = None         # input image
     results = []            # result of previous filter operation
-    output = None
+    output = None           # final squashed output
     
     # Selection Engine
     state = State.LOAD  # intial state: loading
     while True:
         match state:
             case State.LOAD:
-                input = open()  # prompt user for input image
-                stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
+                inputImg = open()  # prompt user for input image
+                stdin = input("Would you like to use our predefined structure to correct the image?\nEnter an option [yes/no]: ")
                 if stdin == 'yes':  # use preset pipeline
-                    output = defaultmodel(input)
-                    input = resize(input, 500, 500)
-                    output = resize(output, 500, 500)
-                    viewCompare(input, output)
+                    output = defaultmodel(inputImg)
+                    viewCompare(inputImg, output)
                     state = State.EXIT
                     break
                 else:
                     state = State.FIRST
             case State.FIRST:   # Applying clustering with custom values
-                clustered = pickClusterFunction(input)
+                clustered = pickClusterFunction(inputImg)
                 results = project(clustered)
                 state = State.SECOND
             case State.SECOND:
@@ -72,11 +69,14 @@ def main():
                         results.append(result)
             case State.EXIT:  # squash, save, and exit
                 print('\nSquashing and saving...')
-                cv.imwrite('output.jpg', squash(results))
+                output = squash(results)
+                cv.imwrite('output.jpg', output)
+                viewCompare(inputImg, output)
                 break
             case _:
                 print("\nERROR: unexpected state " + repr(state))
                 break
+    print('Exit successful.')
 
 # Open a file and get it's path
 def open():
@@ -96,6 +96,13 @@ def open():
     input = cv.imread(inputPath)  
     print("Image " + inputPath + " loaded successfully.")
     return input
+
+def welcome() -> None:
+    print('\nWelcome to CroplandCROS Data Corrector and Visualizer.\
+          \nGavin Haynes & Ibrahim Monsour\nCS360 Database Systems, Fall \'24\
+          \nThis tool consists of two stages: clustering and filtering. Dominant colors are\
+          identified in an input sample and is split up accordingly. Next, you will be\
+          \nprompted with several options to filter the image afterwards.')
 
 def defaultmodel(input):
     input = kMeans(input, k=9)      # find k most dominant colors in the input
@@ -123,6 +130,44 @@ def defaultmodel(input):
 
     return result
 
+# resize img to desired size (dx, dy) using Nearest Neighbor interpolation
+def resize(img, dx, dy):
+    return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
+
+# Apply Canny edge detector to img with thresholds t1 and t2
+def canny(img, t1, t2):
+    return cv.Canny(img, t1, t2)
+
+# prompt the user for clustering options and apply to img
+def pickClusterFunction(img):
+    print("\nNow that you have loaded your image it is time to select your intial cluster function.")
+    print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
+    print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
+
+    option = int(input("\nOptions:\n 1. kMeans\n*Other options not yet added\
+                       \n\nEnter an option [1]: "))
+
+    match option:
+        case 1:
+            num = int(input("\nEnter the number of dominant colors you want identified: "))
+            return kMeans(img, num)
+        case _:
+            return img
+
+# Display options for filtering, which are defined
+# globally. Prompt the user for an option and check input.
+def promptFilters() -> int:
+    i = 0
+    print('\nNow, the input has been split up in to many images with one color each.\
+          \nSelect a filter to modify each split image:')
+    for filter in filters:
+        print(repr(i) + '. ' + filter)
+        i += 1
+    option = int(input(f'\nEnter an option [0-{i-1}]: '))
+
+    # return option if it's valid or 0 otherwise
+    return option if checkInput(option, i) else 0
+
 # pick a filter using option and apply it to a list of images
 def filter(option: int, img) -> list:
     print('Applying ' + filters[option] + '...')
@@ -137,48 +182,12 @@ def filter(option: int, img) -> list:
             print('Error: failed to apply filter option ' + repr(option))
             return img
 
-# resize img to desired size (dx, dy) using Nearest Neighbor interpolation
-def resize(img, dx, dy):
-    return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
-
-# Apply Canny edge detector to img with thresholds t1 and t2
-def canny(img, t1, t2):
-    return cv.Canny(img, t1, t2)
-
-def pickClusterFunction(input):
-    print("Now that you have loaded your image it is time to select your intial cluster function.")
-    print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
-    print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
-
-    option = int(input("\nOptions:\n 1. kMeans\n\nOther options not yet added\n"))
-
-    match option:
-        case 1:
-            num = int(input("\nPlease enter the number of dominant colors you want identified: "))
-            return kMeans(input, num)
-        case _:
-            return input
-
-# Display options for filtering, which are defined
-# globally. Prompt the user for an option and check input.
-def promptFilters() -> int:
-    i = 0
-    print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
-    print('Options:')
-    for filter in filters:
-        print(repr(i) + '. ' + filter)
-        i += 1
-    print(f'\nEnter an option [1-{i}]:')
-    option = int(input())            # prompt user for input
-
-    # return option if it's valid or 0 otherwise
-    return option if checkInput(option, i) else 0
-
 # Check that input is a number and in range
 # return num if valid else 0
 def checkInput(num: int, max: int) -> bool:
-    return True if num is int and num >= 0 and num <= max else False
+    return True if num >= 0 and num <= max else False
 
+# view a list of images as a grid
 def viewGrid(resultList):
     length  = len(resultList)
     rows = int(np.ceil(np.sqrt(length)))
@@ -186,6 +195,7 @@ def viewGrid(resultList):
 
     resultList_with_borders = []
     for img in resultList:
+        img = resize(img, 250, 250)
         bordered_img = cv.copyMakeBorder(img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
         resultList_with_borders.append(bordered_img)
 
@@ -201,7 +211,10 @@ def viewGrid(resultList):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
+# View input_img and output_img side-by-side
 def viewCompare(input_img, output_img):
+    input_img = resize(input_img, 500, 500)
+    output_img = resize(output_img, 500, 500)
     output_img = cv.copyMakeBorder(output_img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
     input_img = cv.copyMakeBorder(input_img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
     side_by_side = np.hstack((input_img, output_img))
@@ -233,7 +246,6 @@ def project(input) -> list:
     if img is None:
         print("Image could not be loaded. Check the file path.")
     unique_colors = np.unique(img.reshape(-1, 3), axis=0) #finds unique elements in a 2d array. Turns 3d image into a 2d image because we do not care about location we only care about individual pixels and there color.
-    print("Unique Colors identified")
 
     individual_color_maps = []
 
@@ -245,7 +257,7 @@ def project(input) -> list:
         
         individual_color_maps.append(color_image)
 
-    print("Image splitting complete")
+    print("\nImage projection complete.")
     return individual_color_maps
 
 # Apply morphological close and open operations on a projection to both remove noise splatter
@@ -274,8 +286,9 @@ def morph(projection, option):
             output = morphClose(projection)
             output = morphOpen(projection)
         case default:
-            pass
-
+            print('Error: morph() recieved invalid option ' + repr(option))
+            return projection 
+    print('Morphological operation complete')
     return output 
 
 # Reduce ambiguity
@@ -311,6 +324,7 @@ def squash(filtered_imgs):
             for img in filtered_imgs:
                 if np.array_equal(combined_img[i,j], [0,0,0]): #check if pixel is black which means it can be changed
                     combined_img[i,j] = img[i,j]
+    print('\nImage squashing complete.\n')
     return combined_img
 
 if __name__ == '__main__':
