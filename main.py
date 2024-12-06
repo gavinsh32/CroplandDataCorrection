@@ -139,7 +139,7 @@ def filter(option: int, img) -> list:
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
-    return cv.resize(img, (dx, dy), cv.INTER_LINEAR)
+    return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
 
 # Apply Canny edge detector to img with thresholds t1 and t2
 def canny(img, t1, t2):
