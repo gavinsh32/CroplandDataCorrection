@@ -150,9 +150,9 @@ def pickClusterFunction(input):
     print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
     print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
 
-    stdin = int(input("\nOptions:\n 1. kMeans\n\nOther options not yet added\n"))
+    option = int(input("\nOptions:\n 1. kMeans\n\nOther options not yet added\n"))
 
-    match stdin:
+    match option:
         case 1:
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
             return kMeans(input, num)
