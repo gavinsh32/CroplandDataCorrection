@@ -55,9 +55,8 @@ def main():
                 else:
                     state = State.FIRST
             case State.FIRST:   # Applying clustering with custom values
-                inputlocal = kMeans(inputlocal, 9)
-                results = project(inputlocal)
-                # results = pickClusterFunction(inputlocal)
+                clustered = pickClusterFunction(inputlocal)
+                results = project(clustered)
                 state = State.SECOND
             case State.SECOND:
                 option = promptFilters()
@@ -140,7 +139,7 @@ def filter(option: int, img) -> list:
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
-    return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
+    return cv.resize(img, (dx, dy), cv.INTER_LINEAR)
 
 # Apply Canny edge detector to img with thresholds t1 and t2
 def canny(img, t1, t2):
@@ -151,12 +150,14 @@ def pickClusterFunction(inputlocal):
     print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
     print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
 
-    stdin = int(input("\nPlease select the cluster algorithm you would like to use: kmeans = 1, other options not yet added\n"))
+    stdin = int(input("\nOptions:\n 1. kMeans\n\nOther options not yet added\n"))
 
     match stdin:
         case 1:
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
             return kMeans(inputlocal, num)
+        case _:
+            return inputlocal
 
 # Display options for filtering, which are defined
 # globally. Prompt the user for an option and check input.
