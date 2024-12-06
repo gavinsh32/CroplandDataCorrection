@@ -21,7 +21,7 @@ from enum import Enum
 
 inputPath = ""
 name = ""  #make global so we can delete it at the end
-filters = ['Squash and Exit', 'Morphological Closing', 'Morphological Opening', 
+filters = ['Squash and Exit', 'View All', 'Morphological Closing', 'Morphological Opening', 
            'Canny']
 
 class State(Enum):
@@ -29,35 +29,52 @@ class State(Enum):
     SECOND = 1,
     INPUT = 2,
     LOAD = 3,
-    SQUASH = 4
+    EXIT = 4
 
 # Main engine
 def main():
     #printWelcome()
-
-    inputlocal = open() # input image
-    results = []    # result of previous filter operation
-
-    inputlocal = kMeans(inputlocal, 9)
-    results = project(inputlocal)
-
+    inputlocal = None       # input image
+    results = []            # result of previous filter operation
+    output = None
+    
+    # Selection Engine
     state = State.LOAD  # intial state: loading
     while True:
         match state:
             case State.LOAD:
                 inputlocal = open()  # prompt user for input image
                 stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
-                if stdin == 'yes':
-                    inputlocal = defaultmodel(inputlocal)
-                    viewCompare(inputlocal, inputlocal)
-                state = State.FIRST
-            case State.FIRST:
-                result = pickClusterFunction(inputlocal)
+                if stdin == 'yes':  # use preset pipeline
+                    output = defaultmodel(inputlocal)
+                    inputlocal = resize(inputlocal, 500, 500)
+                    output = resize(output, 500, 500)
+                    viewCompare(inputlocal, output)
+                    state = State.EXIT
+                    break
+                else:
+                    state = State.FIRST
+            case State.FIRST:   # Applying clustering with custom values
+                inputlocal = kMeans(inputlocal, 9)
+                results = project(inputlocal)
+                # results = pickClusterFunction(inputlocal)
                 state = State.SECOND
             case State.SECOND:
-                printFilterOptions()
-                option = input()
-                pickFilterFunc()
+                option = promptFilters()
+                if option == 0:
+                    state = State.EXIT
+                elif option == 1:
+                    viewGrid(results)
+                else:
+                    oldresults = results
+                    results = []
+                    for result in oldresults:
+                        result = filter(option, result)
+                        results.append(result)
+            case State.EXIT:  # squash, save, and exit
+                print('\nSquashing and saving...')
+                cv.imwrite('output.jpg', squash(results))
+                break
             case _:
                 print("\nERROR: unexpected state " + repr(state))
                 break
@@ -107,19 +124,19 @@ def defaultmodel(input):
 
     return result
 
-# pick a filter using option and apply it to img
-def filter(option, img):
-    print('Applying' + filters[option] + '...')
+# pick a filter using option and apply it to a list of images
+def filter(option: int, img) -> list:
+    print('Applying ' + filters[option] + '...')
     match option:
-        case 1:
+        case 2: # Morph Open
             return morph(img, 0)
-        case 2:
+        case 3: # Morph Close
             return morph(img, 1)
-        case 3:
-            return None
+        case 4: # Canny
+            return canny(img, 50, 150)
         case _:
             print('Error: failed to apply filter option ' + repr(option))
-            return None
+            return img
 
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
@@ -143,7 +160,7 @@ def pickClusterFunction(inputlocal):
 
 # Display options for filtering, which are defined
 # globally. Prompt the user for an option and check input.
-def showFilterOptions() -> int:
+def promptFilters() -> int:
     i = 0
     print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
     print('Options:')
