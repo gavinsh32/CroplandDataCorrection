@@ -31,7 +31,7 @@ def main():
     inputlocal = None
     result = []
 
-    state = State.LOAD
+    state = State.LOAD  # intial state: loading
     while True:
         match state:
             case State.LOAD:
@@ -40,7 +40,6 @@ def main():
                 if stdin == 'yes':
                     inputlocal = defaultmodel(inputlocal)
                     viewCompare(inputlocal, inputlocal)
-                    break
                 state = State.FIRST
             case State.FIRST:
                 result = pickClusterFunction(inputlocal)
@@ -50,28 +49,8 @@ def main():
                 option = input()
                 pickFilterFunc()
             case _:
+                print("\nERROR: unexpected state " + repr(state))
                 break
-
-    # input = kMeans(input, k=9)      # find k most dominant colors in the input
-
-    # projections = project(input)    # split the input by each dominant color
-
-    # # save copies of all projections
-    # for i in range(0, len(projections)):
-    #     cv.imwrite(f'projections/projection{i}.jpg', projections[i])
-
-    # # apply morphological transformations to further reduce noise
-    # morphs = [] 
-    # for i in range(0, len(projections)):
-    #     morphed = morph(projections[i], 2)
-    #     morphs.append(morphed)
-    
-    # # save a copy of all the morphed images
-    # for i in range(0, len(morphs)):
-    #     cv.imwrite(f"./morphs/morph{i}.jpg", morphs[i])
-
-    # # Save results
-    # cv.imwrite(f'output.jpg', squash(morphs))
 
 # Open a file and get it's path
 def open():
