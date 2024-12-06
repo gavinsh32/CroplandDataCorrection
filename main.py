@@ -34,7 +34,7 @@ class State(Enum):
 # Main engine
 def main():
     #printWelcome()
-    inputlocal = None       # input image
+    input = None       # input image
     results = []            # result of previous filter operation
     output = None
     
@@ -43,19 +43,19 @@ def main():
     while True:
         match state:
             case State.LOAD:
-                inputlocal = open()  # prompt user for input image
+                input = open()  # prompt user for input image
                 stdin = input("Would you like to use our predefined structure to correct the image? (enter yes or no) ")
                 if stdin == 'yes':  # use preset pipeline
-                    output = defaultmodel(inputlocal)
-                    inputlocal = resize(inputlocal, 500, 500)
+                    output = defaultmodel(input)
+                    input = resize(input, 500, 500)
                     output = resize(output, 500, 500)
-                    viewCompare(inputlocal, output)
+                    viewCompare(input, output)
                     state = State.EXIT
                     break
                 else:
                     state = State.FIRST
             case State.FIRST:   # Applying clustering with custom values
-                clustered = pickClusterFunction(inputlocal)
+                clustered = pickClusterFunction(input)
                 results = project(clustered)
                 state = State.SECOND
             case State.SECOND:
@@ -145,7 +145,7 @@ def resize(img, dx, dy):
 def canny(img, t1, t2):
     return cv.Canny(img, t1, t2)
 
-def pickClusterFunction(inputlocal):
+def pickClusterFunction(input):
     print("Now that you have loaded your image it is time to select your intial cluster function.")
     print("A cluster function is needed because the image initially has significant noise which makes our algorithms view slight rgb differences as being different colors.")
     print("This is important because an image can only have 10 colors but with noise our algorithms will find possibly hundred or thousands of colors.")
@@ -155,9 +155,9 @@ def pickClusterFunction(inputlocal):
     match stdin:
         case 1:
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
-            return kMeans(inputlocal, num)
+            return kMeans(input, num)
         case _:
-            return inputlocal
+            return input
 
 # Display options for filtering, which are defined
 # globally. Prompt the user for an option and check input.
