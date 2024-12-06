@@ -4,6 +4,11 @@
 # Fall '24
 # An algorithm to clean noise from the CroplandCROS dataset
 
+# To Do:
+#   viewGrid() - Ibrahim
+#   viewComparison() - Ibrahim
+#   
+
 import os
 import sys
 import cv2 as cv
@@ -16,6 +21,8 @@ from enum import Enum
 
 inputPath = ""
 name = ""  #make global so we can delete it at the end
+filters = ['Squash and Exit', 'Morphological Closing', 'Morphological Opening', 
+           'Canny']
 
 class State(Enum):
     FIRST = 0,
@@ -28,8 +35,11 @@ class State(Enum):
 def main():
     #printWelcome()
 
-    inputlocal = None
-    result = []
+    inputlocal = open() # input image
+    results = []    # result of previous filter operation
+
+    inputlocal = kMeans(inputlocal, 9)
+    results = project(inputlocal)
 
     state = State.LOAD  # intial state: loading
     while True:
@@ -58,7 +68,7 @@ def open():
 
     inputPath = fd.askopenfilename(
                     title='Select Input File', 
-                    initialdir='.', 
+                    initialdir='./input', 
                     filetypes=(
                         ('JPG', '*.jpg'),
                         ('JPEG', '*.jpeg'),
@@ -97,9 +107,27 @@ def defaultmodel(input):
 
     return result
 
+# pick a filter using option and apply it to img
+def filter(option, img):
+    print('Applying' + filters[option] + '...')
+    match option:
+        case 1:
+            return morph(img, 0)
+        case 2:
+            return morph(img, 1)
+        case 3:
+            return None
+        case _:
+            print('Error: failed to apply filter option ' + repr(option))
+            return None
+
 # resize img to desired size (dx, dy) using Nearest Neighbor interpolation
 def resize(img, dx, dy):
     return cv.resize(img, (dx, dy), cv.INTER_NEAREST)
+
+# Apply Canny edge detector to img with thresholds t1 and t2
+def canny(img, t1, t2):
+    return cv.Canny(img, t1, t2)
 
 def pickClusterFunction(inputlocal):
     print("Now that you have loaded your image it is time to select your intial cluster function.")
@@ -113,23 +141,32 @@ def pickClusterFunction(inputlocal):
             num = int(input("\nPlease enter the number of dominant colors you want identified: "))
             return kMeans(inputlocal, num)
 
-def showFilterOptions():
-    options = ['morphOpen', 'morphClose', '']
-    i = 1
-    print("Pick a filtering option:")
-    for option in options:
-        print(repr(i) + '. ' + option)
+# Display options for filtering, which are defined
+# globally. Prompt the user for an option and check input.
+def showFilterOptions() -> int:
+    i = 0
+    print('\nNow, the input has been split up in to many images with one color each. Select a filter to modify each split image.')
+    print('Options:')
+    for filter in filters:
+        print(repr(i) + '. ' + filter)
         i += 1
-    return input()
+    print(f'\nEnter an option [1-{i}]:')
+    option = int(input())            # prompt user for input
 
-def resize(scalar):
-    return cv.resize( cv.Ne)
+    # return option if it's valid or 0 otherwise
+    return option if checkInput(option, i) else 0
+
+# Check that input is a number and in range
+# return num if valid else 0
+def checkInput(num: int, max: int) -> bool:
+    return True if num >= 0 and num <= max else False
 
 def viewGrid(resultList):
     length  = len(resultList)
     rows = int(np.ceil(np.sqrt(length)))
     cols = int(np.ceil(length / rows))
 
+<<<<<<< HEAD
     resultList_with_borders = []
     for img in resultList:
         bordered_img = cv.copyMakeBorder(img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
@@ -156,6 +193,8 @@ def viewCompare(input_img, output_img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
+=======
+>>>>>>> 0bb1bedadeb701c7dff077236908e456fc3d5502
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
