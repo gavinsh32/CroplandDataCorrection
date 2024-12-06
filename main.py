@@ -166,7 +166,6 @@ def viewGrid(resultList):
     rows = int(np.ceil(np.sqrt(length)))
     cols = int(np.ceil(length / rows))
 
-<<<<<<< HEAD
     resultList_with_borders = []
     for img in resultList:
         bordered_img = cv.copyMakeBorder(img, 4, 4, 4, 4, cv.BORDER_CONSTANT, value=[255, 255, 255])
@@ -193,8 +192,6 @@ def viewCompare(input_img, output_img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
-=======
->>>>>>> 0bb1bedadeb701c7dff077236908e456fc3d5502
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
