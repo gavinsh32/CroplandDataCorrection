@@ -177,7 +177,7 @@ def promptFilters() -> int:
 # Check that input is a number and in range
 # return num if valid else 0
 def checkInput(num: int, max: int) -> bool:
-    return True if num >= 0 and num <= max else False
+    return True if num is int and num >= 0 and num <= max else False
 
 def viewGrid(resultList):
     length  = len(resultList)
