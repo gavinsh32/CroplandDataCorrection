@@ -170,7 +170,6 @@ def promptFilters() -> int:
 
 # pick a filter using option and apply it to a list of images
 def filter(option: int, img) -> list:
-    print('Applying ' + filters[option] + '...')
     match option:
         case 2: # Morph Open
             return morph(img, 0)
