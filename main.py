@@ -177,28 +177,6 @@ def viewCompare(input_img, output_img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
-# Tokenize
-def parseAlgs(cmd: str) -> bool:
-    cmd = cmd.split(' ')    # tokenize 
-    state = State.FIRST
-    prev = ''
-    # parser engine
-    # commands are in the form kmeans 9 or morph open or morph close,
-    # containing one command and one argument
-    for tok in cmd:
-        match (state):
-            case State.FIRST:   # first stage, clustering
-                # prompt for kmeans value
-                state = State.SECOND # expecting value
-            case State.SECOND:  # second stage, multi image processing
-                pass
-            case State.INPUT:   # expecting a value
-                pass
-            case _:
-                return False
-        prev = tok  # store current token
-    return True
-
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
 def setup() -> None:
