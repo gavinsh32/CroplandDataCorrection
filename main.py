@@ -4,10 +4,10 @@
 # Fall '24
 # An algorithm to clean noise from the CroplandCROS dataset
 
-# To Do:
-#   viewGrid() - Ibrahim
-#   viewComparison() - Ibrahim
-#   
+# To do:
+# squash() doesn't account for reshaping done by canny()
+# add run folders to store each session
+# add folders like 'filter1' 'filter2' to save copies of each step
 
 import os
 import sys
@@ -224,9 +224,7 @@ def viewCompare(input_img, output_img):
 
 # Create a new folder for operating with folders for each intermediate file
 # such as morphs, projections, etc.
-def setup() -> None:
-    global inputPath, name
-
+def setup(path) -> None:
     i = 0
     name = 'run'
     while os.path.exists(name + str(i)):
